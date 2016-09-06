@@ -1904,8 +1904,16 @@ static MONITOR_SERVERS *get_replication_tree(MONITOR *mon, int num_servers)
                 {
                     add_slave_to_master(master->server->slaves, MONITOR_MAX_NUM_SLAVES, current->node_id);
                     master->server->depth = current->depth - 1;
-                    monitor_set_pending_status(master, SERVER_MASTER);
-                    handle->master = master;
+
+                    if (handle->master && master->server->depth < handle->master->server->depth)
+                    {
+                        /** A master with a lower depth was found, remove the
+                            master status from the previous master. */
+                        monitor_clear_pending_status(handle->master, SERVER_MASTER);
+                    }
+
+                   monitor_set_pending_status(master, SERVER_MASTER);
+                   handle->master = master;
                 }
                 else
                 {
