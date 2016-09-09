@@ -485,7 +485,7 @@ static inline void monitor_mysql_db(MONITOR_SERVERS* database, MYSQL_SERVER_INFO
     }
 
     /** Clear old states */
-    monitor_clear_pending_status(database, SERVER_SLAVE | SERVER_MASTER |
+    monitor_clear_pending_status(database, SERVER_SLAVE | SERVER_MASTER | SERVER_RELAY_MASTER |
                                  SERVER_STALE_STATUS | SERVER_SLAVE_OF_EXTERNAL_MASTER);
 
     MYSQL_RES* result;
@@ -737,6 +737,7 @@ monitorDatabase(MONITOR *mon, MONITOR_SERVERS *database)
             server_clear_status(database->server, SERVER_MASTER);
             monitor_clear_pending_status(database, SERVER_SLAVE);
             monitor_clear_pending_status(database, SERVER_MASTER);
+            monitor_clear_pending_status(database, SERVER_RELAY_MASTER);
 
             /* Clean addition status too */
             server_clear_status(database->server, SERVER_SLAVE_OF_EXTERNAL_MASTER);
@@ -1829,6 +1830,7 @@ static MONITOR_SERVERS *get_replication_tree(MONITOR *mon, int num_servers)
                         /** A master with a lower depth was found, remove the
                             master status from the previous master. */
                         monitor_clear_pending_status(handle->master, SERVER_MASTER);
+                        monitor_set_pending_status(handle->master, SERVER_RELAY_MASTER);
                     }
 
                    monitor_set_pending_status(master, SERVER_MASTER);
